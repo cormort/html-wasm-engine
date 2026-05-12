@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <title>LLM HTML 分析工具</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/monokai.min.css">
+    <style>
+        body {
+            font-family: system-ui;
+            padding: 20px;
+            background: #1e1e1e;
+            color: white;
+            display: flex;
+            gap: 20px;
+        }
+
+        .panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .CodeMirror {
+            height: 600px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .toolbar {
+            margin-bottom: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 8px 16px;
+            background: #007acc;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #005999;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="panel">
+        <div class="toolbar">
+            <h3>📝 原始 LLM 程式碼</h3>
+        </div>
+        <textarea id="inputEditor"></textarea>
+    </div>
+
+    <div class="panel">
+        <div class="toolbar">
+            <button id="btnCSS">只看 CSS (Style)</button>
+            <button id="btnJS">只看 JS (Script)</button>
+            <button id="btnBody">只看 UI (Body元件)</button>
+        </div>
+        <textarea id="outputEditor"></textarea>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/htmlmixed/htmlmixed.min.js"></script>
+
+    <script type="module">
+    // 確保路徑指向您剛複製進來的 pkg 資料夾
+    import init, { extract_structure } from './pkg/html_wasm_engine.js';
+
+    async function startApp() {
+        // 載入 WebAssembly 引擎
+        await init(); 
+        console.log("Rust 引擎載入成功！");
+
+        // 初始化左側編輯器 (擁有 VS Code 般的深色主題、語法高亮、括號配對)
+        const editorIn = CodeMirror.fromTextArea(document.getElementById("inputEditor"), {
+            mode: "htmlmixed",
+            theme: "monokai",
+            lineNumbers: true,
+            matchBrackets: true
+        });
+
+        // 初始化右側編輯器
+        const editorOut = CodeMirror.fromTextArea(document.getElementById("outputEditor"), {
+            mode: "css", // 預設先用 CSS 模式
+            theme: "monokai",
+            lineNumbers: true,
+            readOnly: true
+        });
+
+        async function run() {
+            await init(); // 啟動 Rust 引擎
+
+            // 定義按鈕行為：呼叫 Rust 幫忙萃取不同部位
+            document.getElementById('btnCSS').addEventListener('click', () => {
+                editorOut.setOption("mode", "css");
+                // 🚀 請 Rust 找出所有的 <style>
+                const result = extract_structure(editorIn.getValue(), "style");
+                editorOut.setValue(result);
+            });
+
+            document.getElementById('btnJS').addEventListener('click', () => {
+                editorOut.setOption("mode", "javascript");
+                // 🚀 請 Rust 找出所有的 <script>
+                const result = extract_structure(editorIn.getValue(), "script");
+                editorOut.setValue(result);
+            });
+
+            document.getElementById('btnBody').addEventListener('click', () => {
+                editorOut.setOption("mode", "htmlmixed");
+                // 🚀 請 Rust 找出 <body> 裡面的東西 (或您可以改成特定 class 如 ".container")
+                const result = extract_structure(editorIn.getValue(), "body");
+                editorOut.setValue(result);
+            });
+        }
+
+        run();
+    </script>
+</body>
+
+</html>
