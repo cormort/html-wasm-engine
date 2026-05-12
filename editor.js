@@ -89,24 +89,28 @@
     },
 
     bindEvents() {
-      // 萃取按鈕
+      // 👇 加上 if (!window.WasmEngine) 的防護網
       $('#btn-extract-css')?.addEventListener('click', () => {
+        if (!window.WasmEngine) return toast('⚠️ Rust 引擎尚未載入或找不到檔案！');
         const res = window.WasmEngine.extract_structure(this.editor.getValue(), 'style');
         Tabs.add('extracted.css', 'css', res);
       });
 
       $('#btn-extract-js')?.addEventListener('click', () => {
+        if (!window.WasmEngine) return toast('⚠️ Rust 引擎尚未載入或找不到檔案！');
         const res = window.WasmEngine.extract_structure(this.editor.getValue(), 'script');
         Tabs.add('extracted.js', 'js', res);
       });
 
       $('#btn-extract-func')?.addEventListener('click', () => {
+        if (!window.WasmEngine) return toast('⚠️ Rust 引擎尚未載入或找不到檔案！');
         const res = window.WasmEngine.extract_functions(this.editor.getValue());
         Tabs.add('functions.js', 'js', res);
         toast('🦀 函式已萃取至新分頁');
       });
 
       $('#btn-extract-body')?.addEventListener('click', () => {
+        if (!window.WasmEngine) return toast('⚠️ Rust 引擎尚未載入或找不到檔案！');
         const res = window.WasmEngine.extract_structure(this.editor.getValue(), 'body');
         Tabs.add('ui_structure.html', 'html', res);
       });
