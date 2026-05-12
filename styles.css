@@ -1,0 +1,609 @@
+/* HTML Editor Ultimate · Professional IDE System */
+
+:root {
+  /* Core Foundation - High Contrast Slate & Professional Blue */
+  --h: 220;
+  --s: 18%;
+  --l: 98%;
+  
+  --bg-app: #f1f5f9;
+  --bg-pane: #ffffff;
+  --bg-glass: rgba(255, 255, 255, 0.85);
+  --border: #e2e8f0;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  
+  /* Accent System - Indigo & Cobalt */
+  --accent: #2563eb;
+  --accent-soft: rgba(37, 99, 235, 0.08);
+  --accent-hover: #1d4ed8;
+  
+  /* Semantic Colors */
+  --danger: #dc2626;
+  --success: #16a34a;
+  --magic: #4f46e5;
+  
+  /* Typography */
+  --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-head: 'Outfit', sans-serif;
+  --font-mono: 'Fira Code', 'JetBrains Mono', ui-monospace, monospace;
+  
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+  --shadow-md: 0 4px 12px -2px rgba(0,0,0,0.08);
+  --shadow-lg: 0 10px 25px -5px rgba(0,0,0,0.1);
+  
+  --radius: 8px;
+  --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="material"] {
+  --h: 220; --s: 20%; --l: 10%;
+  --bg-app: #020617;
+  --bg-pane: #0f172a;
+  --bg-glass: rgba(15, 23, 42, 0.85);
+  --border: #1e293b;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --accent: #38bdf8;
+  --accent-hover: #7dd3fc;
+}
+
+[data-theme="dracula"] {
+  --bg-app: #1e1f29;
+  --bg-pane: #282a36;
+  --bg-glass: rgba(40, 42, 54, 0.85);
+  --border: #44475a;
+  --text-main: #f8f8f2;
+  --text-muted: #6272a4;
+  --accent: #bd93f9;
+}
+
+/* Base Layout */
+* { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+html, body { height: 100vh; overflow: hidden; }
+
+body { 
+  margin: 0; 
+  width: 100vw;
+  height: 100vh;
+  font-family: var(--font-main); 
+  background: var(--bg-app); 
+  color: var(--text-main); 
+  display: flex; 
+  flex-direction: column; 
+  transition: background 0.4s ease;
+}
+
+/* Header & Glass Effect */
+.header-bar { 
+  height: 60px; 
+  padding: 0 20px; 
+  background: #1e293b;
+  color: #fff; 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  z-index: 100;
+  box-shadow: var(--shadow-md);
+}
+
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand::before { content: '⚡'; font-size: 1.2rem; }
+.brand::after { content: 'HTML GENERATOR'; font-family: var(--font-head); font-weight: 800; font-size: 1rem; letter-spacing: 0.04em; }
+
+/* Control Components */
+select { 
+  background: #334155; 
+  color: #f8fafc; 
+  border: 1px solid #475569; 
+  border-radius: var(--radius); 
+  padding: 6px 12px; 
+  font-size: 0.85rem; 
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+  transition: var(--transition);
+}
+select:hover { background: #475569; }
+
+.btn { 
+  border: none; 
+  border-radius: var(--radius); 
+  padding: 7px 16px; 
+  font-size: 0.85rem; 
+  font-weight: 700; 
+  font-family: var(--font-head);
+  cursor: pointer; 
+  transition: var(--transition); 
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+.btn:hover { filter: brightness(1.1); }
+.btn:active { transform: scale(0.97); }
+
+.btn.action { background: var(--accent); color: #fff; }
+.btn.danger { background: var(--danger); color: #fff; }
+.btn.magic { background: var(--magic); color: #fff; box-shadow: 0 0 15px rgba(79, 70, 229, 0.4); }
+
+.btn.chip { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.25); }
+.btn.chip:hover { border-color: #fff; background: rgba(255,255,255,0.05); }
+.btn.chip.hidden { opacity: 0.4; }
+
+/* In-pane chip style (for nav) */
+.pane .btn.chip { border-color: var(--border); color: var(--text-main); }
+.pane .btn.chip:hover { background: var(--accent-soft); border-color: var(--accent); }
+
+/* Tabs System */
+.tabs-bar { 
+  background: var(--bg-pane); 
+  padding: 10px 20px; 
+  border-bottom: 1px solid var(--border); 
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.tabs { display: flex; gap: 6px; }
+.tab { 
+  padding: 6px 14px; 
+  border-radius: 6px; 
+  background: var(--bg-app);
+  color: var(--text-muted); 
+  font-size: 0.85rem; 
+  font-weight: 600;
+  border: 1px solid transparent;
+  transition: var(--transition);
+}
+.tab.active { background: #fff; color: var(--accent); border-color: var(--border); box-shadow: var(--shadow-sm); }
+[data-theme] .tab.active { background: var(--bg-app); border-color: var(--accent); }
+
+/* Main Grid Layout */
+.main-content { 
+  display: grid; 
+  grid-template-columns: 280px 1px 1fr 1px 1fr; 
+  background: var(--bg-app);
+  flex: 1;
+  min-height: 0;
+}
+.resizer { background: var(--border); cursor: col-resize; position: relative; z-index: 5; }
+.resizer:hover { background: var(--accent); }
+
+.pane { background: var(--bg-glass); display: flex; flex-direction: column; overflow: hidden; }
+.pane-header { padding: 10px 18px; border-bottom: 1px solid var(--border); font-family: var(--font-head); font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 10px; justify-content: space-between; }
+
+/* Sidebar List */
+#outline-container a { display: block; padding: 8px 20px; margin: 1px 10px; border-radius: 4px; font-size: 0.85rem; color: var(--text-muted); text-decoration: none; transition: var(--transition); }
+#outline-container a:hover { background: var(--accent-soft); color: var(--accent); }
+#outline-container a.outline-function { color: var(--success); }
+#outline-container a.outline-function:hover { background: rgba(22, 163, 74, 0.1); color: var(--success); }
+
+/* Editor & Preview */
+#editor-host { flex: 1; background: #fff; overflow: hidden; }
+[data-theme] #editor-host { background: transparent; }
+.CodeMirror { font-size: 14px; line-height: 1.6; height: 100% !important; background: transparent !important; }
+.CodeMirror .cursor-line-highlight { background: rgba(255, 230, 0, 0.3) !important; }
+/* 確保 iframe 填滿剩餘高度 */
+iframe#preview { 
+  flex: 1; 
+  width: 100%; 
+  height: 100%; /* 加入這行 */
+  background: #fff; 
+  border: none; 
+}
+
+.monaco-editor .cursor-line-highlight { background: rgba(255, 230, 0, 0.3) !important; }
+
+/* Modals - HIGH IMPACT FIX */
+.modal-overlay { 
+  display: none; 
+  position: fixed; 
+  inset: 0; 
+  background: rgba(0, 0, 0, 0.7); 
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  z-index: 3000; 
+  align-items: center; 
+  justify-content: center; 
+}
+
+.modal-content { 
+  width: min(1000px, 94vw); 
+  height: 85vh;
+  background: var(--bg-pane); 
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  padding: 30px;
+  gap: 20px;
+  animation: modalIn 0.3s ease-out;
+}
+
+@keyframes modalIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+
+.modal-header { font-family: var(--font-head); font-size: 1.4rem; font-weight: 800; }
+.modal-textarea {
+  flex: 1;
+  width: 100%;
+  background: var(--bg-app);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-main);
+  padding: 24px;
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  resize: none;
+  outline: none;
+}
+.modal-textarea:focus { border-color: var(--accent); }
+
+.modal-footer { display: flex; justify-content: flex-end; gap: 12px; }
+
+/* Toast */
+.toast { position: fixed; bottom: 30px; right: 30px; background: #0f172a; color: #fff; padding: 12px 24px; border-radius: 8px; box-shadow: var(--shadow-lg); font-weight: 600; opacity: 0; pointer-events: none; transition: var(--transition); z-index: 5000; }
+.toast.show { opacity: 1; transform: translateY(-5px); }
+
+.muted { color: var(--text-muted); }
+
+/* RWD */
+@media (max-width: 1024px) {
+  .main-content { grid-template-columns: 1fr; display: flex; flex-direction: column; overflow: auto; }
+  .resizer, #pane-nav { display: none; }
+  #pane-editor, #pane-preview {
+  display: flex !important;
+  flex-direction: column !important;
+  }  
+}
+/* =============================================
+   MOBILE OPTIMIZATIONS — append to styles.css
+   ============================================= */
+
+@media (max-width: 768px) {
+
+  /* === HEADER === */
+  .header-bar {
+    height: auto;
+    min-height: 48px;
+    padding: 8px 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .brand::after {
+    font-size: 0.85rem;
+    letter-spacing: 0.02em;
+  }
+
+  /* === CONTROLS ROW — scroll horizontally === */
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;          /* Firefox */
+    width: 100%;
+    padding-bottom: 2px;
+  }
+  .controls::-webkit-scrollbar { display: none; }
+
+  /* Compact selects */
+  .controls select {
+    padding: 5px 8px;
+    font-size: 0.78rem;
+    flex-shrink: 0;
+  }
+
+  /* Compact buttons */
+  .controls .btn {
+    padding: 5px 10px;
+    font-size: 0.78rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Hide secondary buttons by default — show via expand */
+  #btn-toggle-nav,
+  #btn-toggle-preview {
+    display: none;     /* nav/preview always stacked on mobile */
+  }
+
+  /* === TABS BAR === */
+  .tabs-bar {
+    padding: 6px 10px;
+    gap: 8px;
+  }
+
+  .tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex: 1;
+    min-width: 0;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+
+  .tab {
+    padding: 5px 10px;
+    font-size: 0.78rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  #btn-new-tab {
+    padding: 5px 10px;
+    font-size: 0.78rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* === MAIN LAYOUT — vertical stack === */
+  .main-content {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .resizer,
+  #pane-nav { display: none !important; }
+
+  /* Editor pane */
+  #pane-editor {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 45vh;
+    max-height: 55vh;
+    border-bottom: 2px solid var(--border);
+  }
+
+  /* Preview pane */
+  #pane-preview {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 40vh;
+    flex: 1;
+  }
+
+  /* Pane headers */
+  .pane-header {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+
+  /* AI button text — shorter label */
+  #btn-ai::before { content: '🪄'; }
+  #btn-ai { font-size: 0.78rem; padding: 5px 10px; }
+
+  /* CodeMirror fills pane height */
+  #editor-host {
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .CodeMirror {
+    font-size: 13px !important;
+    height: 100% !important;
+  }
+
+  /* Preview iframe fills pane height */
+  iframe#preview {
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* === AI MODAL === */
+  .modal-content {
+    width: 96vw;
+    height: 80vh;
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .modal-header { font-size: 1.1rem; }
+
+  .modal-textarea {
+    padding: 14px;
+    font-size: 0.85rem;
+  }
+
+  /* === TOAST === */
+  .toast {
+    bottom: 16px;
+    right: 12px;
+    left: 12px;
+    text-align: center;
+    font-size: 0.85rem;
+    padding: 10px 16px;
+  }
+
+  /* === REPAIR LINK === */
+  .brand > a {
+    font-size: 0.65rem !important;
+    margin-left: 8px !important;
+  }
+}
+
+/* Very small screens (iPhone SE etc.) */
+@media (max-width: 390px) {
+  .controls select { display: none; }   /* hide engine/theme selects, use defaults */
+  .controls .btn { padding: 5px 8px; font-size: 0.72rem; }
+}
+/* =============================================
+   MOBILE OPTIMIZATIONS — append to styles.css
+   ============================================= */
+
+@media (max-width: 768px) {
+
+  /* === HEADER === */
+  .header-bar {
+    height: auto;
+    min-height: 48px;
+    padding: 8px 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .brand::after {
+    font-size: 0.85rem;
+    letter-spacing: 0.02em;
+  }
+
+  /* === CONTROLS ROW — scroll horizontally === */
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;          /* Firefox */
+    width: 100%;
+    padding-bottom: 2px;
+  }
+  .controls::-webkit-scrollbar { display: none; }
+
+  /* Compact selects */
+  .controls select {
+    padding: 5px 8px;
+    font-size: 0.78rem;
+    flex-shrink: 0;
+  }
+
+  /* Compact buttons */
+  .controls .btn {
+    padding: 5px 10px;
+    font-size: 0.78rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Hide secondary buttons by default — show via expand */
+  #btn-toggle-nav,
+  #btn-toggle-preview {
+    display: none;     /* nav/preview always stacked on mobile */
+  }
+
+  /* === TABS BAR === */
+  .tabs-bar {
+    padding: 6px 10px;
+    gap: 8px;
+  }
+
+  .tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex: 1;
+    min-width: 0;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+
+  .tab {
+    padding: 5px 10px;
+    font-size: 0.78rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  #btn-new-tab {
+    padding: 5px 10px;
+    font-size: 0.78rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* === MAIN LAYOUT — vertical stack === */
+  .main-content {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .resizer,
+  #pane-nav { display: none !important; }
+
+  /* Editor pane */
+  #pane-editor {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 45vh;
+    max-height: 55vh;
+    border-bottom: 2px solid var(--border);
+  }
+
+  /* Preview pane */
+  #pane-preview {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 40vh;
+    flex: 1;
+  }
+
+  /* Pane headers */
+  .pane-header {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+
+  /* AI button text — shorter label */
+  #btn-ai::before { content: '🪄'; }
+  #btn-ai { font-size: 0.78rem; padding: 5px 10px; }
+
+  /* CodeMirror fills pane height */
+  #editor-host {
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .CodeMirror {
+    font-size: 13px !important;
+    height: 100% !important;
+  }
+
+  /* Preview iframe fills pane height */
+  iframe#preview {
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* === AI MODAL === */
+  .modal-content {
+    width: 96vw;
+    height: 80vh;
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .modal-header { font-size: 1.1rem; }
+
+  .modal-textarea {
+    padding: 14px;
+    font-size: 0.85rem;
+  }
+
+  /* === TOAST === */
+  .toast {
+    bottom: 16px;
+    right: 12px;
+    left: 12px;
+    text-align: center;
+    font-size: 0.85rem;
+    padding: 10px 16px;
+  }
+
+  /* === REPAIR LINK === */
+  .brand > a {
+    font-size: 0.65rem !important;
+    margin-left: 8px !important;
+  }
+}
+
+/* Very small screens (iPhone SE etc.) */
+@media (max-width: 390px) {
+  .controls select { display: none; }   /* hide engine/theme selects, use defaults */
+  .controls .btn { padding: 5px 8px; font-size: 0.72rem; }
+}
