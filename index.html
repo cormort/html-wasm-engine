@@ -3,41 +3,36 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>HTML Editor Ultimate · Pro (AI/AST/Monaco)</title>
+  <title>HTML Editor Ultimate · Pro (Rust Wasm Enhanced)</title>
   
   <link rel="icon" href="data:,">
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css" crossorigin="anonymous" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/material.min.css" crossorigin="anonymous" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/dracula.min.css" crossorigin="anonymous" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/lint/lint.css" crossorigin="anonymous" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/foldgutter.css" crossorigin="anonymous" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/dialog/dialog.css" crossorigin="anonymous" />
-
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/material.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/dracula.min.css" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="header-bar">
     <div class="brand">
-      <a href="javascript:App.repair()" class="muted" style="margin-left: 20px; font-size: 0.7rem; text-decoration: none;" title="當頁面顯示異常時點擊此處修復">⚙️ 重設暫存</a>
+      <a href="javascript:App.repair()" class="muted" style="margin-left: 20px; font-size: 0.7rem; text-decoration: none;">⚙️ 重設暫存</a>
     </div>
     <div class="controls">
       <div class="status"><span id="save-status"></span></div>
-      <select id="engine-select" title="編輯器引擎">
+      <select id="engine-select">
         <option value="codemirror">CodeMirror</option>
         <option value="monaco">Monaco</option>
       </select>
-      <select id="theme-select" title="主題">
+      <select id="theme-select">
         <option value="default">Light</option>
         <option value="material">Material</option>
         <option value="dracula">Dracula</option>
       </select>
-      <button id="btn-toggle-nav" class="btn chip" title="縮放導覽樹">📂 導覽</button>
-      <button id="btn-toggle-preview" class="btn chip" title="縮放預覽視窗">👁️ 預覽</button>
+      <button id="btn-toggle-nav" class="btn chip">📂 導覽</button>
+      <button id="btn-toggle-preview" class="btn chip">👁️ 預覽</button>
       <button id="btn-format" class="btn action">美化</button>
       <button id="btn-download" class="btn action">下載</button>
       <button id="btn-clear" class="btn danger">清空</button>
@@ -54,13 +49,13 @@
   <main class="main-content" id="grid">
     <aside class="pane" id="pane-nav">
       <div class="pane-header">
-        <span class="pane-title">結構</span>
+        <span class="pane-title">結構導覽</span>
         <select id="nav-filter">
           <option value="all">全部</option>
           <option value="headings">標題</option>
-          <option value="ids">ID</option>
-          <option value="classes">Class</option>
-          <option value="functions">函式</option>
+          <option value="ids">精準 ID</option>
+          <option value="classes">精準 Class</option>
+          <option value="containers">容器元件</option>
         </select>
         <button id="btn-refresh-outline" class="btn chip">⟳</button>
       </div>
@@ -73,9 +68,10 @@
       <div class="pane-header">
         <span class="pane-title">原始碼</span>
         <div class="btn-group">
-          <button id="btn-extract-css" class="btn chip">🦀 萃取 CSS</button>
-          <button id="btn-extract-js" class="btn chip">🦀 萃取 JS</button>
-          <button id="btn-extract-body" class="btn chip">🦀 萃取 UI</button>
+          <button id="btn-extract-css" class="btn chip">🦀 CSS</button>
+          <button id="btn-extract-js" class="btn chip">🦀 JS</button>
+          <button id="btn-extract-func" class="btn chip" style="border-color: #ffd54f; color: #ffd54f;">🦀 萃取函式</button>
+          <button id="btn-extract-body" class="btn chip">🦀 UI</button>
           <button id="btn-ai" class="btn magic">🪄 智能替換</button>
         </div>
       </div>
@@ -89,62 +85,48 @@
     <section class="pane" id="pane-preview">
       <div class="pane-header">
         <span class="pane-title">預覽</span>
-        <label class="inline">
-          <input type="checkbox" id="md-toggle" /> Markdown
-        </label>
+        <label><input type="checkbox" id="md-toggle" /> Markdown</label>
       </div>
       <iframe id="preview" sandbox="allow-scripts allow-modals"></iframe>
     </section>
   </main>
 
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div id="toast" class="toast"></div>
 
-  <div id="ai-modal" class="modal-overlay" aria-hidden="true">
-    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="ai-modal-title">
-      <div id="ai-modal-title" class="modal-header">🪄 AI 智慧程式碼替換</div>
-      <p class="muted">貼上 <b>完整 JS function</b> 或 <b>CSS 區塊</b>。系統將使用 <b>AST</b> 尋找並精準替換。</p>
-      <textarea id="ai-input" class="modal-textarea" placeholder="例如：\nfunction updatePreview() {\n  // ...\n}"></textarea>
+  <div id="ai-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">🪄 AI 智慧程式碼替換</div>
+      <p class="muted">貼上 <b>JS function</b> 或 <b>CSS 區塊</b>，系統將精準替換目標。</p>
+      <textarea id="ai-input" class="modal-textarea" placeholder="例如：function update() { ... }"></textarea>
       <div class="modal-footer">
         <button id="btn-ai-cancel" class="btn">取消</button>
-        <button id="btn-ai-replace" class="btn magic">自動搜尋並替換</button>
+        <button id="btn-ai-replace" class="btn magic">自動替換</button>
       </div>
     </div>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js" crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/dialog/dialog.min.js" crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/search/searchcursor.min.js" crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/search/search.min.js" crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/edit/closetag.min.js" crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/xml-fold.min.js" crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/xml/xml.min.js" crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/javascript/javascript.min.js" crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/css/css.min.js" crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/htmlmixed/htmlmixed.min.js" crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/markdown/markdown.min.js" crossorigin="anonymous"></script>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify-html.min.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" crossorigin="anonymous"></script>
-
-  <script src="https://cdn.jsdelivr.net/npm/acorn@8/dist/acorn.min.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/acorn-walk@8/dist/walk.min.js" crossorigin="anonymous"></script>
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/xml/xml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/css/css.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/htmlmixed/htmlmixed.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify-html.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/acorn@8/dist/acorn.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/acorn-walk@8/dist/walk.min.js"></script>
   <script>window.__MONACO_BASE__ = 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/';</script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
 
   <script src="editor.js"></script>
 
   <script type="module">
-    import init, { extract_structure } from './pkg/html_wasm_engine.js';
-    
+    import init, { extract_structure, extract_functions, get_dom_outline } from './pkg/html_wasm_engine.js?v=final';
     async function loadRustEngine() {
       try {
         await init();
-        window.WasmEngine = { extract_structure };
-        console.log("🚀 Rust WebAssembly 引擎載入成功！");
-      } catch (err) {
-        console.error("Rust 引擎載入失敗:", err);
-      }
+        window.WasmEngine = { extract_structure, extract_functions, get_dom_outline };
+        console.log("🚀 Rust Wasm Engine Ready");
+      } catch (e) { console.error("Rust Error:", e); }
     }
     loadRustEngine();
   </script>
